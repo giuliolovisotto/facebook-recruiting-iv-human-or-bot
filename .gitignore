@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 data/
+.idea/
 
 __pycache__/
 
@@ -59,3 +60,5 @@ docs/_build/
 
 # PyBuilder
 target/
+
+.ipynb_checkpoints
