@@ -14,13 +14,41 @@ import argparse
 # File header looks like this
 # bid_id,bidder_id,auction,merchandise,device,time,country,ip,url
 
+# TODO: average delay from last bid, variance of delay from last bid
+
 def single_bidder(b_id, b_hash, filtered):
     n_device = np.unique(filtered[:, 4]).shape[0]
     n_ip = np.unique(filtered[:, 7]).shape[0]
     n_country = np.unique(filtered[:, 6]).shape[0]
     n_url = np.unique(filtered[:, 8]).shape[0]
-    np.savetxt("data/features/%s.csv" % b_id, np.array([n_device, n_ip, n_country, n_url]), fmt="%d")
+
+    df = pd.DataFrame(filtered[:, [1, 2]], index=filtered[:, 0], columns=['bid_id', 'auction'])
+    bids_count = df.groupby(['auction']).count()['bid_id'].as_matrix()
+    avg_b, var_b = bids_count.mean(), bids_count.var()
+
+    t = filtered[:, 5].astype(float)
+    t_diff = t[1:] - t[:-1]
+    avg_t, var_t = t_diff.mean(), t_diff.var()
+    zero_t = t_diff.shape[0] - np.count_nonzero(t_diff)
+
+    f_array = np.array([
+        n_device,
+        n_ip,
+        n_country,
+        n_url,
+        avg_b,
+        var_b,
+        avg_t,
+        avg_b,
+        zero_t
+    ])
+
+    f_array[np.isnan(f_array)] = 0
+
+    np.savetxt("data/features/%s.csv" % b_id, f_array)
+    # print f_array
     print b_id
+
 
 
 if __name__ == "__main__":
@@ -37,7 +65,7 @@ if __name__ == "__main__":
         print "removed"
     start = time.time()
     print "loading dataset..."
-    _f_bids = pd.read_csv("./data/bids.csv")
+    _f_bids = pd.read_csv("./data/bids.csv",)
     print "%s sec" % (time.time()-start)
 
     _bidder_ids = np.loadtxt("./data/bidder_ids.csv", delimiter=",", dtype='str')
