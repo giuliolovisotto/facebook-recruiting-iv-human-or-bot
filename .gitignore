@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
-data/
+data/features/
+data/bids.csv
 .idea/
 
 __pycache__/
