@@ -39,7 +39,7 @@ def single_bidder(b_id, b_hash, filtered):
         avg_b,
         var_b,
         avg_t,
-        avg_b,
+        var_t,
         zero_t
     ])
 
@@ -54,7 +54,22 @@ def single_bidder(b_id, b_hash, filtered):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-r", action="store_true", help="remove preexisting files")
+    parser.add_argument("-j", action="store_true", help="join feature files")
     args = parser.parse_args()
+
+    _bidder_ids = np.loadtxt("./data/train_ids.csv", dtype='str', usecols=(0, 1))
+
+    n_samples = _bidder_ids.shape[0]
+    n_features = 9
+
+    if args.j:
+        print "joining files..."
+        features = np.zeros(shape=(n_samples, n_features))
+        for i in range(n_samples):
+            features[i, :] = np.loadtxt("data/features/%s.csv" % i,)
+
+        np.savetxt("data/features.csv", features, fmt="%d %d %d %d %f %f %f %f %d")
+        sys.exit()
 
     if args.r:
         print "removing old files..."
@@ -63,15 +78,11 @@ if __name__ == "__main__":
         for fileName in fileList:
             os.remove(dirPath+"/"+fileName)
         print "removed"
+
     start = time.time()
     print "loading dataset..."
     _f_bids = pd.read_csv("./data/bids.csv",)
     print "%s sec" % (time.time()-start)
-
-    _bidder_ids = np.loadtxt("./data/bidder_ids.csv", delimiter=",", dtype='str')
-
-    n_samples = _bidder_ids.shape[0]
-    n_features = 4
 
     print "removing files from queue..."
     start = time.time()
@@ -82,6 +93,7 @@ if __name__ == "__main__":
     onlyfiles = map(lambda x: x[:-4], onlyfiles)
 
     _bidder_ids = _bidder_ids[~np.in1d(_bidder_ids[:, 0], onlyfiles)]
+
     print "%s sec" % (time.time()-start)
 
     start = time.time()
@@ -96,13 +108,6 @@ if __name__ == "__main__":
     # for row in _bidder_ids:
     #     single_bidder(row[0], row[1], m_f_bids[m_f_bids[:, 1] == row[1]])
 
-    # when the shit is over save everything into a single file
-
-    features = np.zeros(shape=(n_samples, n_features))
-    for i in range(n_samples):
-        features[i, :] = np.loadtxt("data/features/%s.csv" % i,)
-
-    np.savetxt("data/features.csv", features, fmt="%d")
 
 
 
