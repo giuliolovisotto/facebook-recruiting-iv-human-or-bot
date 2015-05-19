@@ -50,25 +50,41 @@ def single_bidder(b_id, b_hash, filtered):
     print b_id
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-r", action="store_true", help="remove preexisting files")
     parser.add_argument("-j", action="store_true", help="join feature files")
+    parser.add_argument("--all", action="store_true", help="compute also test set features")
+
     args = parser.parse_args()
 
     _bidder_ids = np.loadtxt("./data/train_ids.csv", dtype='str', usecols=(0, 1))
+    _test_ids = np.loadtxt("./data/test_ids.csv", dtype='str', usecols=(0, 1))
+
+    n_train = _bidder_ids.shape[0]
+    n_test = _test_ids.shape[0]
+
+
+
+    if args.all:
+        _bidder_ids = np.vstack((_bidder_ids, _test_ids))
 
     n_samples = _bidder_ids.shape[0]
     n_features = 9
 
     if args.j:
         print "joining files..."
-        features = np.zeros(shape=(n_samples, n_features))
-        for i in range(n_samples):
+        features = np.zeros(shape=(n_train, n_features))
+        for i in range(n_train):
             features[i, :] = np.loadtxt("data/features/%s.csv" % i,)
 
         np.savetxt("data/features.csv", features, fmt="%d %d %d %d %f %f %f %f %d")
+
+        features_test = np.zeros(shape=(n_test, n_features))
+        for i in range(n_test):
+            features_test[i, :] = np.loadtxt("data/features/%s.csv" % str(i+n_train),)
+
+        np.savetxt("data/features_test.csv", features_test, fmt="%d %d %d %d %f %f %f %f %d")
         sys.exit()
 
     if args.r:
