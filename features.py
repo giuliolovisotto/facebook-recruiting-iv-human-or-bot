@@ -15,6 +15,7 @@ import argparse
 # bid_id,bidder_id,auction,merchandise,device,time,country,ip,url
 
 # TODO: average delay from last bid, variance of delay from last bid
+# TODO: average number of bidders in my auctions
 
 def single_bidder(b_id, b_hash, filtered):
     n_device = np.unique(filtered[:, 4]).shape[0]
