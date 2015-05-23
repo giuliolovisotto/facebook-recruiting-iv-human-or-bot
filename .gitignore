@@ -64,3 +64,5 @@ target/
 
 .ipynb_checkpoints
 data/auctions
+data/f_auctions
+data/f_bidder_id

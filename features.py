@@ -17,17 +17,30 @@ import argparse
 # TODO: average delay from last bid, variance of delay from last bid
 # TODO: average number of bidders in my auctions
 
-def single_bidder(b_id, b_hash, filtered):
-    n_device = np.unique(filtered[:, 4]).shape[0]
-    n_ip = np.unique(filtered[:, 7]).shape[0]
-    n_country = np.unique(filtered[:, 6]).shape[0]
-    n_url = np.unique(filtered[:, 8]).shape[0]
+def single_bidder(b_id, b_hash):
+    print b_id
+    filtered = np.loadtxt("data/f_bidder_id/%s.csv" % b_id, delimiter=',', dtype='str')
+    if filtered.ndim == 1:
+        if filtered.shape[0] == 0:
+            np.savetxt("data/features/%s.csv" % b_id, np.zeros(9))
+            f = open('data/emptyfiles.txt', 'a')
+            f.write("%s\n" % b_id)
+            f.close()
+            return
+        else:
+            filtered = filtered[None, :]
+    # if filtered.shape[0] == 0:
+    # auction_id, merchandise, device, time, count, ip, url
+    n_device = np.unique(filtered[:, 2]).shape[0]
+    n_ip = np.unique(filtered[:, 5]).shape[0]
+    n_country = np.unique(filtered[:, 4]).shape[0]
+    n_url = np.unique(filtered[:, 6]).shape[0]
 
-    df = pd.DataFrame(filtered[:, [1, 2]], index=filtered[:, 0], columns=['bid_id', 'auction'])
-    bids_count = df.groupby(['auction']).count()['bid_id'].as_matrix()
+    df = pd.DataFrame(filtered[:, :2], columns=['auction', 'something'])
+    bids_count = df.groupby(['auction']).count()['something']
     avg_b, var_b = bids_count.mean(), bids_count.var()
 
-    t = filtered[:, 5].astype(float)
+    t = filtered[:, 3].astype(float)
     t_diff = t[1:] - t[:-1]
     avg_t, var_t = t_diff.mean(), t_diff.var()
     zero_t = t_diff.shape[0] - np.count_nonzero(t_diff)
@@ -48,7 +61,6 @@ def single_bidder(b_id, b_hash, filtered):
 
     np.savetxt("data/features/%s.csv" % b_id, f_array)
     # print f_array
-    print b_id
 
 
 if __name__ == "__main__":
@@ -64,8 +76,6 @@ if __name__ == "__main__":
 
     n_train = _bidder_ids.shape[0]
     n_test = _test_ids.shape[0]
-
-
 
     if args.all:
         _bidder_ids = np.vstack((_bidder_ids, _test_ids))
@@ -94,12 +104,8 @@ if __name__ == "__main__":
         fileList = os.listdir(dirPath)
         for fileName in fileList:
             os.remove(dirPath+"/"+fileName)
+        os.remove("data/emptyfiles.txt")
         print "removed"
-
-    start = time.time()
-    print "loading dataset..."
-    _f_bids = pd.read_csv("./data/bids.csv",)
-    print "%s sec" % (time.time()-start)
 
     print "removing files from queue..."
     start = time.time()
@@ -115,15 +121,17 @@ if __name__ == "__main__":
 
     start = time.time()
 
-    m_f_bids = _f_bids.as_matrix()
 
     jl.Parallel(n_jobs=jl.cpu_count())(
         # jl.delayed(single_bidder)(row[0], _f_bids.query('bidder_id == "%s"' % row[1])) for row in
-        jl.delayed(single_bidder)(row[0], row[1], m_f_bids[m_f_bids[:, 1] == row[1]]) for row in _bidder_ids
+        jl.delayed(single_bidder)(
+            row[0],
+            row[1],
+        ) for row in _bidder_ids
     )
 
     # for row in _bidder_ids:
-    #     single_bidder(row[0], row[1], m_f_bids[m_f_bids[:, 1] == row[1]])
+    #     single_bidder(row[0], row[1])
 
 
 
