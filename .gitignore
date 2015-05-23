@@ -63,3 +63,4 @@ docs/_build/
 target/
 
 .ipynb_checkpoints
+data/auctions
