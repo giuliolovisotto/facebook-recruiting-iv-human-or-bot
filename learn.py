@@ -3,37 +3,51 @@ from sklearn.ensemble import GradientBoostingClassifier, ExtraTreesClassifier
 import utils as ut
 import numpy as np
 import os
+from sklearn.svm import SVC
+from sklearn.preprocessing import scale, MinMaxScaler
+
 
 reload(ut)
 
 X_train, y_train = ut.load_X(), ut.load_y()
 
+
+
 X_test = ut.load_X_test()
+
+X = np.vstack((X_train, X_test))
+
+mms = MinMaxScaler()
+X = mms.fit_transform(X)
+
+X_train = X[:X_train.shape[0]]
+X_test = X[X_train.shape[0]:]
+
 # mms = MinMaxScaler()
 # X = mms.fit_transform(X)
 
-rfc = ExtraTreesClassifier(bootstrap=False, class_weight=None, criterion='gini',
-           max_depth=None, max_features='auto', max_leaf_nodes=None,
-           min_samples_leaf=1, min_samples_split=2,
-           min_weight_fraction_leaf=0.0, n_estimators=50, n_jobs=1,
-           oob_score=False, random_state=None, verbose=0, warm_start=False)
-gbc = GradientBoostingClassifier(init=None, learning_rate=0.027825594022071243,
-              loss='deviance', max_depth=3, max_features=None,
-              max_leaf_nodes=None, min_samples_leaf=1, min_samples_split=2,
-              min_weight_fraction_leaf=0.0, n_estimators=100,
-              random_state=None, subsample=1.0, verbose=0,
-              warm_start=False)
 
+clf1 = SVC(
+    C=0.032442260791716297, cache_size=200, class_weight=None, coef0=0.0,
+    degree=3, gamma=0.0, kernel='rbf', max_iter=-1, probability=True,
+    random_state=None, shrinking=True, tol=0.001, verbose=False
+)
+clf2 = GradientBoostingClassifier(
+    init=None, learning_rate=0.01, loss='deviance',
+    max_depth=3, max_features=None, max_leaf_nodes=None,
+    min_samples_leaf=1, min_samples_split=2, n_estimators=500,
+    random_state=None, subsample=1.0, verbose=0,
+)
 
-rfc.fit(X_train, y_train)
-gbc.fit(X_train, y_train)
+clf1.fit(X_train, y_train)
+clf2.fit(X_train, y_train)
 
-rfc_y = rfc.predict_proba(X_test)[:, 1]
-gbc_y = gbc.predict_proba(X_test)[:, 1]
+clf1_y = clf1.predict_proba(X_test)[:, 1]
+clf2_y = clf2.predict_proba(X_test)[:, 1]
 
 alpha = 0.5
 
-tot = alpha*rfc_y+(1-alpha)*gbc_y
+tot = alpha*clf1_y+(1-alpha)*clf2_y
 
 _test_ids = np.loadtxt("./data/test_ids.csv", dtype='str', usecols=(1, ))
 

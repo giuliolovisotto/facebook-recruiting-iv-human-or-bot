@@ -25,7 +25,7 @@ for row in _bidder_ids:
     np.savetxt("data/auctions/%s.csv" % row[0], auctions, fmt="%s")
     sys.stdout.write("\r%s/%s" % (int(row[0])+1, _bidder_ids.shape[0]))
     sys.stdout.flush()
-exit()
+
 n_a = len(all_auctions)
 
 sys.stdout.write("Step 2 of 2.\n")

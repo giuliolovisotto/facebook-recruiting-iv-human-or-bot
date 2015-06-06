@@ -17,7 +17,7 @@ def exaustive_selection(clf, X, y, scoring='accuracy', fold=None):
 
     all_subsets = []
     s_set = set(np.arange(n_features).astype(int))
-    for i in range(1, n_features+1):
+    for i in range(14, n_features+1):
         for s in findsubsets(s_set, i):
             all_subsets.append(s)
 
@@ -27,7 +27,8 @@ def exaustive_selection(clf, X, y, scoring='accuracy', fold=None):
 
     sys.stdout.write("There we go...")
     for i, comb in enumerate(all_subsets):
-        # sys.stdout.write("%s/%s\n" % (i+1, n_comb))
+        sys.stdout.write("\r%s/%s\n" % (i+1, n_comb))
+        sys.stdout.flush()
         X_comb = X[:, comb]
         temp = np.zeros(5)
         for j in range(5):
@@ -38,7 +39,7 @@ def exaustive_selection(clf, X, y, scoring='accuracy', fold=None):
     best_res = results.max()
     best_ind = results.argmax()
     best_comb = all_subsets[best_ind]
-    return best_comb
+    return best_comb, best_res
 
 
 
