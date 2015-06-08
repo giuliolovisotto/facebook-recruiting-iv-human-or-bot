@@ -20,6 +20,9 @@ def single_bidder(b_id, b_hash):
     print b_id
     filtered = np.loadtxt("data/f_bidder_id/%s.csv" % b_id, delimiter=',', dtype='str')
     auction_ids = np.loadtxt("data/auctions/%s.csv" % b_id, dtype='str', ndmin=1)
+    n_auctions = 0
+    if len(auction_ids) > 0:
+        n_auctions = auction_ids.shape[0]
 
     if filtered.ndim == 1:
         if filtered.shape[0] == 0:
@@ -42,32 +45,26 @@ def single_bidder(b_id, b_hash):
     bids_count = df.groupby(['auction']).count()['something']
     avg_b, std_b = bids_count.mean(), bids_count.std()
 
+    df = pd.DataFrame(filtered[:, (2, 1)], columns=['device', 'something'])
+    bids_count_device = df.groupby(['device']).count()['something']
+    avg_b_d, std_b_d = bids_count_device.mean(), bids_count_device.std()
+
+    df = pd.DataFrame(filtered[:, (6, 1)], columns=['url', 'something'])
+    bids_count_url = df.groupby(['url']).count()['something']
+    avg_b_url, std_b_url = bids_count_url.mean(), bids_count_url.std()
+
+    df = pd.DataFrame(filtered[:, (5, 1)], columns=['ip', 'something'])
+    bids_count_ip = df.groupby(['ip']).count()['something']
+    avg_b_ip, std_b_ip = bids_count_ip.mean(), bids_count_ip.std()
+
+    df = pd.DataFrame(filtered[:, (4, 1)], columns=['country', 'something'])
+    bids_count_country = df.groupby(['country']).count()['something']
+    avg_b_c, std_b_c = bids_count_country.mean(), bids_count_country.std()
+
     t = filtered[:, 3].astype(float)
     t_diff = t[1:] - t[:-1]
     avg_t, std_t = t_diff.mean(), t_diff.std()
     zero_t = t_diff.shape[0] - np.count_nonzero(t_diff)
-
-    if len(auction_ids)>0:
-        n_auctions = auction_ids.shape[0]
-        delays_from_last_bid = []
-        n_bidders = np.zeros(n_auctions)
-        raises_per_bid = np.zeros(n_auctions)
-
-        for k, auction in enumerate(auction_ids):
-            a_bids = np.loadtxt("data/f_auctions/%s.csv" % auction, delimiter=',', dtype='str', ndmin=2)
-            n_bidders[k] = np.unique(a_bids[:, 0]).shape[0]
-            for j, a_bid in enumerate(a_bids[1:]):
-                if a_bid[0] == b_id:  # if i am the bidder
-                    if a_bids[j, 0] == b_id:  # if previous bid was mine, increase raises per auction
-                        raises_per_bid[k] += 1
-                    else:
-                        delays_from_last_bid.append(float(a_bid[2])-float(a_bids[j, 2]))
-        delays_from_last_bid = np.array(delays_from_last_bid)
-    else:
-        n_auctions = np.zeros(1)
-        delays_from_last_bid = np.zeros(1)
-        n_bidders = np.zeros(1)
-        raises_per_bid = np.zeros(1)
 
     f_array = np.array([
         n_device,
@@ -78,15 +75,15 @@ def single_bidder(b_id, b_hash):
         avg_b,
         std_b,
         avg_t/1000000.0,
-        std_t/1000000.0,
-        zero_t,
         n_auctions,
-        delays_from_last_bid.mean()/1000000.0,
-        delays_from_last_bid.std()/1000000.0,
-        n_bidders.mean(),
-        n_bidders.std(),
-        raises_per_bid.mean(),
-        raises_per_bid.std()
+        avg_b_d,
+        std_b_d,
+        avg_b_ip,
+        std_b_ip,
+        avg_b_url,
+        std_b_url,
+        avg_b_c,
+        std_b_c
     ])
 
     f_array[np.isnan(f_array)] = 0

@@ -17,6 +17,7 @@ _bidder_ids = np.vstack((_train_ids, _test_ids))
 all_auctions = np.unique(m_f_bids[:, 1])
 
 sys.stdout.write("Step 1 of 2.\n")
+'''
 for row in _bidder_ids:
     mask = (m_f_bids[:, 0] == row[1])
     auctions = np.unique(m_f_bids[mask][:, 1])
@@ -25,7 +26,7 @@ for row in _bidder_ids:
     np.savetxt("data/auctions/%s.csv" % row[0], auctions, fmt="%s")
     sys.stdout.write("\r%s/%s" % (int(row[0])+1, _bidder_ids.shape[0]))
     sys.stdout.flush()
-
+'''
 n_a = len(all_auctions)
 
 sys.stdout.write("Step 2 of 2.\n")
@@ -36,8 +37,8 @@ for i, a in enumerate(all_auctions):
 
     firstcol = masked[:, 0]
     firstcol = np.array([mapper[bidder] for bidder in firstcol])
-    masked = np.hstack((firstcol[:, None], masked[:, [2, 4]]))
+    masked = np.hstack((firstcol[:, None], masked[:, :]))
 
-    np.savetxt("data/f_auctions/%s.csv" % a, masked, fmt="%s,%s,%s")
+    np.savetxt("data/f_auctions/%s.csv" % a, masked, delimiter=',', fmt="%s")
     sys.stdout.write("\r%s/%s" % (i+1, n_a))
     sys.stdout.flush()
