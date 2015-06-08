@@ -38,15 +38,17 @@ clf2.fit(X_train, y_train)
 clf1_y = clf1.predict_proba(X_test)[:, 1]
 clf2_y = clf2.predict_proba(X_test)[:, 1]
 
-alpha = 0.5
+alpha = 0.0
 
 tot = alpha*clf1_y+(1-alpha)*clf2_y
 
 empty = np.loadtxt("data/emptyfiles.txt", dtype='int')
 empty -= 2013
-empty = empty[empty >= 0]
 
+empty = empty[empty >= 0]
+print empty
 tot[empty] = 0.0000000000
+print tot[4686]
 
 _test_ids = np.loadtxt("./data/test_ids.csv", dtype='str', usecols=(1, ))
 
